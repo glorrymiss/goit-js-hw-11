@@ -1,5 +1,9 @@
 import Notiflix from 'notiflix';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+const axios = require('axios');
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+
 const refs = {
   form: document.querySelector('#search-form'),
   container: document.querySelector('.gallery'),
@@ -14,16 +18,10 @@ let page = 1;
 let per_page = 100;
 const URL = 'https://pixabay.com/api/';
 const KEY = '33635231-9592dead0045fe81be9248485';
-const options = {
-  q: inputValue /*виправити на inputValue */,
-  image_type: 'photo',
-  orientation: 'horizontal',
-  safesearch: 'true',
-};
-const optionJSON = JSON.stringify(options);
+
 function fetchArticles(page = 1) {
   return fetch(
-    `${URL}?key=${KEY}&${optionJSON}&page=${page}&per_page=${per_page}`
+    `${URL}?key=${KEY}&q=${inputValue}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=${per_page}`
   ).then(response => {
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -37,20 +35,20 @@ function onSearch(event) {
 
   inputValue = event.currentTarget.elements.searchQuery.value.trim();
   console.log(inputValue);
+  if (inputValue === '') {
+    return;
+  }
   onUpdate();
   fetchArticles()
     .then(data => {
       if (data.hits === [] || data.hits.length === 0) {
-        Notiflix.Notify.error(
+        Notiflix.Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
-        return;
+        return '';
       } else {
         page = 1;
         createMarkup(data.hits);
-
-        // page = 1;
-
         refs.btnLoad.hidden = false;
         Notiflix.Notify.info(`Hooray! We found ${data.totalHits} images.`);
       }
@@ -64,26 +62,33 @@ function loadMore() {
 
   fetchArticles(page).then(data => {
     createMarkup(data.hits);
+    gallery.refresh();
     const pages = Math.ceil(data.totalHits / per_page);
-
+    console.log(page);
+    console.log(pages);
     if (pages === page) {
+      refs.btnLoad.hidden = true;
       Notiflix.Notify.info(
         "We're sorry, but you've reached the end of search results."
       );
-      refs.btnLoad.hidden = true;
     }
   });
-
-  //   const result = data.total - data.totalHits;
-  //   Notiflix.Notify.info(
-  //     "We're sorry, but you've reached the end of search results."
-  //   );
 }
 
 function createMarkup(arr) {
   const markup = arr
-    .map(({ webformatURL, tags, likes, views, comments, downloads }) => {
-      return `
+    .map(
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) => {
+        return `
+      <a href="${largeImageURL}">
       <div class="photo-card">
   <img src="${webformatURL}" alt="${tags}" loading="lazy" width="320" heigth ="280"/>
   <div class="info">
@@ -101,16 +106,18 @@ function createMarkup(arr) {
     </p>
   </div>
 </div>
+</a>
     `;
-    })
+      }
+    )
     .join('');
+
   refs.container.insertAdjacentHTML('beforeend', markup);
 }
 
-// function addMarkup(markup) {
-//   refs.container.insertAdjacentHTML('beforeend', markup);
-// }
 function onUpdate() {
   refs.form.reset();
   refs.container.innerHTML = '';
 }
+//  add lightbox
+const gallery = new SimpleLightbox('.gallery a');
