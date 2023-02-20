@@ -110,13 +110,13 @@ function createMarkup(arr) {
       }
     )
     .join('');
-
+  
+  //  add lightbox
+  const gallery = new SimpleLightbox('.gallery a');
   refs.container.insertAdjacentHTML('beforeend', markup);
 }
 
 function onUpdate() {
-  refs.form.reset();
+
   refs.container.innerHTML = '';
 }
-//  add lightbox
-const gallery = new SimpleLightbox('.gallery a');
