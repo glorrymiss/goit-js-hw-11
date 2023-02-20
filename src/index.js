@@ -15,7 +15,8 @@ refs.btnLoad.addEventListener('click', loadMore);
 
 let inputValue = '';
 let page = 1;
-let per_page = 100;
+let per_page = 200;
+let gallery = new SimpleLightbox('.gallery a');
 const URL = 'https://pixabay.com/api/';
 const KEY = '33635231-9592dead0045fe81be9248485';
 
@@ -36,6 +37,7 @@ function onSearch(event) {
   inputValue = event.currentTarget.elements.searchQuery.value.trim();
   console.log(inputValue);
   if (inputValue === '') {
+    onUpdate();
     return;
   }
   onUpdate();
@@ -51,6 +53,15 @@ function onSearch(event) {
         createMarkup(data.hits);
         refs.btnLoad.hidden = false;
         Notiflix.Notify.info(`Hooray! We found ${data.totalHits} images.`);
+        gallery.refresh();
+        const { height: cardHeight } = document
+          .querySelector('.gallery')
+          .firstElementChild.getBoundingClientRect();
+
+        window.scrollBy({
+          top: cardHeight * -100,
+          behavior: 'smooth',
+        });
       }
     })
 
@@ -63,10 +74,12 @@ function loadMore() {
   fetchArticles(page).then(data => {
     createMarkup(data.hits);
     gallery.refresh();
+
     const pages = Math.ceil(data.totalHits / per_page);
-    
-    if (pages === page) {
-      refs.btnLoad.classList.add ='is-hidden';
+
+    if (page === pages) {
+      refs.btnLoad.hidden = true;
+      refs.btnLoad.style.display = 'none';
       Notiflix.Notify.info(
         "We're sorry, but you've reached the end of search results."
       );
@@ -87,7 +100,7 @@ function createMarkup(arr) {
         downloads,
       }) => {
         return `
-      <a href="${largeImageURL}">
+      <a class='card-link' href="${largeImageURL}">
       <div class="photo-card">
   <img src="${webformatURL}" alt="${tags}" loading="lazy" width="320" height ="280"/>
   <div class="info">
@@ -110,13 +123,12 @@ function createMarkup(arr) {
       }
     )
     .join('');
-  
-  //  add lightbox
-  const gallery = new SimpleLightbox('.gallery a');
+
   refs.container.insertAdjacentHTML('beforeend', markup);
+  //  add lightbox
+  gallery = new SimpleLightbox('.gallery a');
 }
 
 function onUpdate() {
-
   refs.container.innerHTML = '';
 }
