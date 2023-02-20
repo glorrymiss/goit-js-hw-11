@@ -64,10 +64,9 @@ function loadMore() {
     createMarkup(data.hits);
     gallery.refresh();
     const pages = Math.ceil(data.totalHits / per_page);
-    console.log(page);
-    console.log(pages);
+    
     if (pages === page) {
-      refs.btnLoad.hidden = true;
+      refs.btnLoad.classList.add ='is-hidden';
       Notiflix.Notify.info(
         "We're sorry, but you've reached the end of search results."
       );
