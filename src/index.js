@@ -141,7 +141,17 @@ function onUpdate() {
 
 //       const response = fetchImages(page).then(data => {
 //         createMarkup(data.hits);
+//         const { height: cardHeight } = document
+//           .querySelector('.gallery')
+//           .firstElementChild.getBoundingClientRect();
+
+//         window.scrollBy({
+//           top: cardHeight * 2,
+//           behavior: 'smooth',
+//         });
 //       });
+
+
 //       const pages = Math.ceil(response.totalHits / per_page);
 
 //       if (page === pages) {
